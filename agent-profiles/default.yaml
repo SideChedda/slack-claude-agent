@@ -1,0 +1,23 @@
+name: default
+description: General purpose development agent
+systemPrompt: |
+  You are a helpful software development assistant.
+  Focus on writing clean, maintainable code.
+capabilities:
+  - code-generation
+  - debugging
+  - testing
+  - documentation
+tools:
+  - file-operations
+  - terminal
+  - search
+  - git
+maxTokens: 4096
+temperature: 0.7
+autoExecute: false
+requireConfirmation: true
+verboseLogging: false
+maxMemoryMB: 2048
+maxExecutionTimeMinutes: 60
+maxConcurrentTasks: 3
