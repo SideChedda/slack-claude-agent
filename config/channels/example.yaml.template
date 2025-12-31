@@ -1,0 +1,24 @@
+# Example channel configuration
+# Copy this file and rename to your-channel-id.yaml
+
+channel_id: C0123456789          # Your Slack channel ID
+channel_name: my-project         # Human-readable name (used in threads)
+repo: git@github.com:user/repo.git
+clone_path: /app/workspaces/my-project
+
+# Git settings
+pr_target: main
+branch_prefix: agent/my-project
+
+# Behavior
+default_model: sonnet           # sonnet | opus | haiku
+on_failure: ask                 # ask | stop | retry | draft_pr
+on_concurrent: ask              # ask | queue | parallel | reject
+
+# Optional: setup commands run before each task
+# setup_commands:
+#   - npm install
+#   - npm run build
+
+# Optional: use a specific agent profile
+# profile: api-specialist
