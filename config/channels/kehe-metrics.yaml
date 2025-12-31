@@ -1,0 +1,13 @@
+channel_id: C0A5VC84DB9
+channel_name: kehe-metrics-agent
+repo: git@github.com:thebridgelab/kehe-metrics.git
+clone_path: /app/workspaces/kehe-metrics
+
+# Git settings
+pr_target: main
+branch_prefix: agent/kehe-metrics
+
+# Behavior
+default_model: sonnet
+on_failure: ask
+on_concurrent: ask
