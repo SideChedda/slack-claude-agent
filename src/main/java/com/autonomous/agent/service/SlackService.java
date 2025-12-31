@@ -42,19 +42,73 @@ public class SlackService {
     public void sendMessage(String channel, String message) {
         try {
             MethodsClient methods = slack.methods(slackBotToken);
-            
+
             ChatPostMessageRequest request = ChatPostMessageRequest.builder()
                 .channel(channel)
                 .text(message)
                 .build();
-                
+
             ChatPostMessageResponse response = methods.chatPostMessage(request);
-            
+
             if (!response.isOk()) {
                 System.err.println("Failed to send message: " + response.getError());
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Posts a message to a channel and returns the message timestamp.
+     * The timestamp can be used to create a thread.
+     */
+    public String postMessage(String channel, String message) {
+        try {
+            MethodsClient methods = slack.methods(slackBotToken);
+
+            ChatPostMessageRequest request = ChatPostMessageRequest.builder()
+                .channel(channel)
+                .text(message)
+                .build();
+
+            ChatPostMessageResponse response = methods.chatPostMessage(request);
+
+            if (response.isOk()) {
+                return response.getTs();
+            } else {
+                System.err.println("Failed to post message: " + response.getError());
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Posts a message as a reply in an existing thread.
+     */
+    public String postMessageInThread(String channel, String threadTs, String message) {
+        try {
+            MethodsClient methods = slack.methods(slackBotToken);
+
+            ChatPostMessageRequest request = ChatPostMessageRequest.builder()
+                .channel(channel)
+                .threadTs(threadTs)
+                .text(message)
+                .build();
+
+            ChatPostMessageResponse response = methods.chatPostMessage(request);
+
+            if (response.isOk()) {
+                return response.getTs();
+            } else {
+                System.err.println("Failed to post message in thread: " + response.getError());
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
