@@ -6,7 +6,12 @@ plugins {
 
 group = 'com.autonomous'
 version = '1.0.0'
-sourceCompatibility = '17'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 configurations {
     compileOnly {
