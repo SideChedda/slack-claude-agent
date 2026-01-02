@@ -21,7 +21,51 @@ public class GitService {
         return String.format("%s/%s/%s", prefix, channelName, taskId);
     }
 
+    public boolean ensureRepoCloned(String repoUrl, String clonePath) {
+        File repoDir = new File(clonePath);
+
+        // If directory exists and has .git, repo is already cloned
+        if (repoDir.exists() && new File(repoDir, ".git").exists()) {
+            // Pull latest changes
+            runGitCommand(clonePath, "git", "fetch", "origin");
+            runGitCommand(clonePath, "git", "checkout", "main");
+            runGitCommand(clonePath, "git", "pull", "origin", "main");
+            return true;
+        }
+
+        // Create parent directory if needed
+        repoDir.getParentFile().mkdirs();
+
+        // Clone the repo
+        try {
+            ProcessBuilder pb = new ProcessBuilder("git", "clone", repoUrl, clonePath);
+            pb.redirectErrorStream(true);
+
+            Process process = pb.start();
+            String output = readProcessOutput(process);
+            boolean finished = process.waitFor(5, TimeUnit.MINUTES);
+
+            if (!finished) {
+                process.destroyForcibly();
+                System.err.println("Clone timed out");
+                return false;
+            }
+
+            if (process.exitValue() != 0) {
+                System.err.println("Clone failed: " + output);
+                return false;
+            }
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean createBranch(String repoPath, String branchName) {
+        // Make sure we're on main first
+        runGitCommand(repoPath, "git", "checkout", "main");
         return runGitCommand(repoPath, "git", "checkout", "-b", branchName);
     }
 

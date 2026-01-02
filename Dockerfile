@@ -31,6 +31,15 @@ COPY config/ /app/config/
 # Create data directory
 RUN mkdir -p /app/data /app/workspaces
 
+# Configure git for private repos (uses GITHUB_TOKEN at runtime)
+RUN git config --global credential.helper store && \
+    git config --global user.email "agent@slack-claude.app" && \
+    git config --global user.name "Slack Claude Agent"
+
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Entrypoint script to configure git credentials at runtime
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

@@ -118,6 +118,11 @@ public class TaskExecutorService {
             execution.setBranchName(branchName);
 
             if (gitService != null) {
+                // Ensure repo is cloned before doing anything else
+                if (!gitService.ensureRepoCloned(config.getRepo(), config.getClonePath())) {
+                    throw new RuntimeException("Failed to clone repository: " + config.getRepo());
+                }
+
                 gitService.createBranch(config.getClonePath(), branchName);
 
                 if (config.getSetupCommands() != null) {
