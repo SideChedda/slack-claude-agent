@@ -203,8 +203,9 @@ public class TaskExecutorService {
     private String callClaudeCode(TaskExecution execution, ChannelConfig config) throws Exception {
         List<String> command = new ArrayList<>();
         command.add(claudeCodePath);
-        command.add("--print");
+        command.add("-p");  // Short for --print (non-interactive)
         command.add("--dangerously-skip-permissions");
+        command.add("--verbose");  // Show more output
         command.add(execution.getDescription());
 
         System.out.println("Running command: " + String.join(" ", command));
@@ -213,6 +214,7 @@ public class TaskExecutorService {
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.directory(new File(config.getClonePath()));
         pb.redirectErrorStream(true);
+        pb.redirectInput(ProcessBuilder.Redirect.from(new File("/dev/null"))); // Prevent stdin blocking
 
         Process process = pb.start();
         execution.setProcess(process);
