@@ -19,24 +19,36 @@ public class SlackService {
     
     public void processEvent(Map<String, Object> payload) {
         Map<String, Object> event = (Map<String, Object>) payload.get("event");
-        
+
         if (event != null) {
             String type = (String) event.get("type");
-            
-            if ("app_mention".equals(type) || "message".equals(type)) {
+
+            // Ignore bot messages to prevent loops
+            if (event.containsKey("bot_id") || event.containsKey("bot_profile")) {
+                return;
+            }
+
+            // Ignore message subtypes (edits, deletes, etc)
+            if (event.containsKey("subtype")) {
+                return;
+            }
+
+            // Only respond to direct @mentions for now
+            // Slash commands are handled separately via /slash-commands endpoint
+            if ("app_mention".equals(type)) {
                 String text = (String) event.get("text");
                 String channel = (String) event.get("channel");
-                String user = (String) event.get("user");
-                
-                // Process message through Claude
-                handleMessage(text, channel, user);
+                String threadTs = (String) event.get("thread_ts");
+
+                // Reply in thread if it's a thread message
+                if (threadTs != null) {
+                    postMessageInThread(channel, threadTs, "I received your mention. Use `/agent-task` to submit tasks.");
+                } else {
+                    sendMessage(channel, "Hi! Use `/agent-task <description>` to submit a task.");
+                }
             }
+            // Don't auto-respond to regular messages - only slash commands trigger tasks
         }
-    }
-    
-    private void handleMessage(String text, String channel, String user) {
-        // This will be integrated with ClaudeAgentService
-        sendMessage(channel, "Processing your request...");
     }
     
     public void sendMessage(String channel, String message) {
