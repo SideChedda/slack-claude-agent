@@ -109,7 +109,9 @@ public class TaskExecutorService {
     }
 
     private String executeTask(TaskExecution execution, ChannelConfig config) {
+        System.out.println("executeTask started for: " + execution.getDescription());
         try {
+            System.out.println("GitService is: " + (gitService != null ? "available" : "NULL"));
             String branchName = gitService != null ? gitService.generateBranchName(
                 config.getChannelName(),
                 execution.getTaskId(),
@@ -119,11 +121,15 @@ public class TaskExecutorService {
 
             if (gitService != null) {
                 // Ensure repo is cloned before doing anything else
+                System.out.println("Cloning repo: " + config.getRepo() + " to " + config.getClonePath());
                 if (!gitService.ensureRepoCloned(config.getRepo(), config.getClonePath())) {
                     throw new RuntimeException("Failed to clone repository: " + config.getRepo());
                 }
+                System.out.println("Repo cloned successfully");
 
+                System.out.println("Creating branch: " + branchName);
                 gitService.createBranch(config.getClonePath(), branchName);
+                System.out.println("Branch created");
 
                 if (config.getSetupCommands() != null) {
                     for (String cmd : config.getSetupCommands()) {
@@ -132,7 +138,9 @@ public class TaskExecutorService {
                 }
             }
 
+            System.out.println("Calling Claude Code...");
             String result = callClaudeCode(execution, config);
+            System.out.println("Claude Code completed, result length: " + result.length());
 
             String diffStats = gitService != null ?
                 gitService.getDiffStats(config.getClonePath(), config.getPrTarget()) : "unknown";
