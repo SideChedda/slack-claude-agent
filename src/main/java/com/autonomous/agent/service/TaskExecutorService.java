@@ -204,9 +204,11 @@ public class TaskExecutorService {
         List<String> command = new ArrayList<>();
         command.add(claudeCodePath);
         command.add("--print");
-        command.add("--model");
-        command.add(mapModelName(execution.getModel()));
+        command.add("--dangerously-skip-permissions");
         command.add(execution.getDescription());
+
+        System.out.println("Running command: " + String.join(" ", command));
+        System.out.println("ANTHROPIC_API_KEY set: " + (System.getenv("ANTHROPIC_API_KEY") != null));
 
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.directory(new File(config.getClonePath()));
@@ -221,6 +223,7 @@ public class TaskExecutorService {
             String line;
             while ((line = reader.readLine()) != null) {
                 output.append(line).append("\n");
+                System.out.println("[claude] " + line); // Log output as it comes
             }
         }
 
