@@ -206,8 +206,8 @@ public class TaskExecutorService {
         List<String> command = new ArrayList<>();
         command.add(claudeCodePath);
         command.add("-p");  // Short for --print (non-interactive)
-        command.add("--allowedTools");
-        command.add("Edit,Write,Read,Glob,Grep,Bash");  // Allow file operations
+        command.add("--max-turns");
+        command.add("10");  // Limit iterations
         command.add(execution.getDescription());
 
         System.out.println("Running command: " + String.join(" ", command));
@@ -216,7 +216,6 @@ public class TaskExecutorService {
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.directory(new File(config.getClonePath()));
         pb.redirectErrorStream(true);
-        pb.redirectInput(ProcessBuilder.Redirect.from(new File("/dev/null"))); // Prevent stdin blocking
 
         Process process = pb.start();
         execution.setProcess(process);
