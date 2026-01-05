@@ -145,8 +145,10 @@ public class TaskExecutorService {
             String diffStats = gitService != null ?
                 gitService.getDiffStats(config.getClonePath(), config.getPrTarget()) : "unknown";
 
-            String testResults = gitService != null ?
-                gitService.runTests(config.getClonePath(), "./gradlew test") : "skipped";
+            // Detect test command based on project type
+            String testCommand = detectTestCommand(config.getClonePath());
+            String testResults = testCommand != null && gitService != null ?
+                gitService.runTests(config.getClonePath(), testCommand) : "skipped (no test runner found)";
 
             if (gitService != null) {
                 gitService.commitAll(config.getClonePath(), "feat: " + execution.getDescription());
@@ -204,7 +206,8 @@ public class TaskExecutorService {
         List<String> command = new ArrayList<>();
         command.add(claudeCodePath);
         command.add("-p");  // Short for --print (non-interactive)
-        command.add("--verbose");  // Show more output
+        command.add("--allowedTools");
+        command.add("Edit,Write,Read,Glob,Grep,Bash");  // Allow file operations
         command.add(execution.getDescription());
 
         System.out.println("Running command: " + String.join(" ", command));
@@ -247,6 +250,45 @@ public class TaskExecutorService {
             case "haiku" -> "claude-3-haiku-20240307";
             default -> "claude-3-5-sonnet-20241022";
         };
+    }
+
+    private String detectTestCommand(String repoPath) {
+        File repo = new File(repoPath);
+
+        // Gradle
+        if (new File(repo, "gradlew").exists()) {
+            return "./gradlew test";
+        }
+        if (new File(repo, "build.gradle").exists() || new File(repo, "build.gradle.kts").exists()) {
+            return "gradle test";
+        }
+
+        // Maven
+        if (new File(repo, "pom.xml").exists()) {
+            return "mvn test";
+        }
+
+        // Node.js
+        if (new File(repo, "package.json").exists()) {
+            return "npm test";
+        }
+
+        // .NET (check for any .csproj or .sln files)
+        String[] files = repo.list();
+        if (files != null) {
+            for (String file : files) {
+                if (file.endsWith(".csproj") || file.endsWith(".sln")) {
+                    return "dotnet test";
+                }
+            }
+        }
+
+        // Python
+        if (new File(repo, "pytest.ini").exists() || new File(repo, "setup.py").exists()) {
+            return "pytest";
+        }
+
+        return null; // No test runner detected
     }
 
     public boolean cancelTask(String channelId) {
