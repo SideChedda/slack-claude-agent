@@ -204,7 +204,6 @@ public class TaskExecutorService {
         List<String> command = new ArrayList<>();
         command.add(claudeCodePath);
         command.add("-p");  // Short for --print (non-interactive)
-        command.add("--dangerously-skip-permissions");
         command.add("--verbose");  // Show more output
         command.add(execution.getDescription());
 
